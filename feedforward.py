@@ -30,6 +30,5 @@ if st.session_state.clicked:
 
 st.divider()
 st.caption(
-    "© 2026 Shishir Dahake · DinoGPT, a ground-up Transformer · "
-    "[Source on GitHub](https://github.com/shishirdahake/dino_gpt)"
+    "© 2026 Shishir Dahake · Apache-2.0 · [Source on GitHub](https://github.com/shishirdahake/dino_gpt)"
 )
