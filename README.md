@@ -297,6 +297,7 @@ So pretraining is the foundation, SFT is the same machinery aimed at better exam
 | `dinohelper.py` | The model classes and `generate_name`, as an importable module |
 | `feedforward.py` | Streamlit web app: type a seed, get a dinosaur |
 | `requirements.txt` | Packages the app needs (`torch`, `streamlit`) |
+| `LICENSE` / `NOTICE` | Apache-2.0 license and the attribution notice to keep when reusing |
 
 ## Running the app
 
@@ -322,6 +323,16 @@ Then open the address it prints (usually `http://localhost:8501`), type the star
 | **Total** | **53,533** |
 
 The sinusoidal position table is a buffer, not a parameter, so it isn't trained or counted.
+
+---
+
+## License
+
+DinoGPT © 2026 Shishir Dahake. Licensed under the [Apache License 2.0](LICENSE).
+
+You're free to use, modify and build on this work, including in commercial or closed-source projects, as long as you keep the attribution in the [`NOTICE`](NOTICE) file: credit **DinoGPT by Shishir Dahake** with a link to https://github.com/shishirdahake/dino_gpt.
+
+Dinosaur names were sourced from Wikipedia's list of dinosaur genera.
 
 ---
 
