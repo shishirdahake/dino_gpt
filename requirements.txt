@@ -1,0 +1,6 @@
+# DinoGPT web app (feedforward.py)
+torch
+streamlit
+
+# For the training notebook (dinogpt.ipynb), also install:
+# pandas matplotlib ipywidgets jupyter

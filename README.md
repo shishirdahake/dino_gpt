@@ -191,6 +191,30 @@ Once the pieces fit, these parts were simple.
 
 **It knows when a name is finished.** When I seed it with a complete real name (a whole dinosaur name, not just a start), it closes right away with `$`. Nobody hard-coded that. Endings like *-saurus*, *-raptor* and *-don* are followed by `$` hundreds of times in the training rows, so the model learned that a name ending that way is done.
 
+### 4. From notebook to web app
+
+Once the model worked in the notebook, I wanted people to use it without opening Jupyter. That took two steps.
+
+**`dinohelper.py`: an independent loader.** I moved the model classes (`DinoEmbedding`, `PositionEncoder`, `AttentionHead`, `MHA`, `FFN`, `Decoder`) and `generate_name` out of the notebook into a plain Python module. Any script can now rebuild the model and load the trained weights with one import, without needing the notebook or retraining:
+
+```python
+from dinohelper import Decoder, generate_name
+
+model = Decoder()
+model.load_state_dict(torch.load("dino_gpt.pth"))
+model.eval()
+```
+
+The weights file only stores numbers. The code that knows what those numbers *mean* (the architecture) has to come from somewhere, and `dinohelper.py` is that somewhere.
+
+**`feedforward.py`: the Streamlit app.** It imports from `dinohelper.py`, loads `dino_gpt.pth` once, and puts a text box and a 🦖 **Generate Name** button on a web page. The name comes back in bold in a green box:
+
+> Our latest Dinosaur is named **SHISHIROSURK**. Roar!
+
+> Our latest Dinosaur is named **FIGMAOCAR**. Roar!
+
+This is the same `generate_name` loop as in the notebook. Only the front end changed.
+
 ---
 
 ## Choices I made, and why
@@ -205,6 +229,8 @@ Once the pieces fit, these parts were simple.
 | **Causal mask** | Each position predicts the next letter using only what came before, the same setup GPT uses. It isn't strictly required by my prefix-per-row training, but it's needed for whole-name training. See *The causal mask* above. |
 | **Read only the last real position** | Each training row asks exactly one question: what comes after this prefix? |
 | **Sampling instead of argmax** | Always picking the top letter gives the same name every time. Sampling makes every run a new dinosaur. |
+| **Separate `dinohelper.py`** | Gives the app (and anything else) an independent way to load the model, without depending on the notebook. The notebook is for training; the module is for using. |
+| **Streamlit for the app** | A working web page in about 20 lines of Python, with no HTML or JavaScript, and a clear path to hosting it on Hugging Face Spaces. |
 | **`time.sleep(0.12)` while printing** | Added later. The model is so fast the name appeared all at once, so the delay streams it letter by letter, like a chatbot "thinking". Built for my six-year-old's demo, along with the 🦖 MAKE A DINO! button. (It held his attention for about two minutes.) |
 
 ---
@@ -225,6 +251,8 @@ Once the pieces fit, these parts were simple.
 - **Fix the 10 merged names** and work out the max length from the data instead of hard-coding 27 in three places.
 - **Shuffle once.** The DataLoader's `shuffle=True` already does it; the pandas shuffle is redundant.
 - Multiply the embeddings by √dmodel before adding positions, as the paper does.
+- **Harden the app before it goes public.** The tokenizer only knows a–z, so a seed with spaces, digits or punctuation (`T-Rex 2`) will crash it. Keep only letters and cap the length. Also cache the model with `@st.cache_resource` so it isn't reloaded on every click, and load it with `map_location="cpu"` for servers without a GPU.
+- **Publish it as a Hugging Face Space,** so anyone can make a dinosaur from a link.
 
 ---
 
@@ -261,8 +289,19 @@ So pretraining is the foundation, SFT is the same machinery aimed at better exam
 | `dino_train.csv` | 19,910 training rows |
 | `encoder.py` | Character tokenizer (29 tokens) |
 | `word_converter.py` | Quick tokenizer and padding test |
-| `dinogpt.ipynb` | Model, training, generation, and the 🦖 button |
+| `dinogpt.ipynb` | Model, training, generation, and the original 🦖 button |
 | `dino_gpt.pth` | Trained weights |
+| `dinohelper.py` | The model classes and `generate_name`, as an importable module |
+| `feedforward.py` | Streamlit web app: type a seed, get a dinosaur |
+
+## Running the app
+
+```bash
+pip install torch streamlit
+streamlit run feedforward.py
+```
+
+Then open the address it prints (usually `http://localhost:8501`), type the start of a name, or nothing at all, and press **Generate Name**.
 
 ## Parameter count
 
