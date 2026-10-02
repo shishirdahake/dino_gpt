@@ -6,6 +6,8 @@ A tiny transformer, built from scratch in PyTorch, that invents dinosaur names o
 - Trained on **1,535 real dinosaur names**
 - Give it a seed (`golu`) and it finishes the name (`goluacesaurus`)
 
+**🦖 Try it live: [dino-gpt.streamlit.app](https://dino-gpt.streamlit.app/)**
+
 It's small enough to train on a laptop and simple enough that I know what every line does. This document explains how I built it, and why I made the choices I did.
 
 ## Why I built this
@@ -230,7 +232,7 @@ This is the same `generate_name` loop as in the notebook. Only the front end cha
 | **Read only the last real position** | Each training row asks exactly one question: what comes after this prefix? |
 | **Sampling instead of argmax** | Always picking the top letter gives the same name every time. Sampling makes every run a new dinosaur. |
 | **Separate `dinohelper.py`** | Gives the app (and anything else) an independent way to load the model, without depending on the notebook. The notebook is for training; the module is for using. |
-| **Streamlit for the app** | A working web page in about 20 lines of Python, with no HTML or JavaScript, and a clear path to hosting it on Hugging Face Spaces. |
+| **Streamlit for the app** | A working web page in about 20 lines of Python, with no HTML or JavaScript, and free hosting on Streamlit Community Cloud straight from GitHub. |
 | **`time.sleep(0.12)` while printing** | Added later. The model is so fast the name appeared all at once, so the delay streams it letter by letter, like a chatbot "thinking". Built for my six-year-old's demo, along with the 🦖 MAKE A DINO! button. (It held his attention for about two minutes.) |
 
 ---
@@ -252,7 +254,8 @@ This is the same `generate_name` loop as in the notebook. Only the front end cha
 - **Shuffle once.** The DataLoader's `shuffle=True` already does it; the pandas shuffle is redundant.
 - Multiply the embeddings by √dmodel before adding positions, as the paper does.
 - **Harden the app before it goes public.** The tokenizer only knows a–z, so a seed with spaces, digits or punctuation (`T-Rex 2`) will crash it. Keep only letters and cap the length. Also cache the model with `@st.cache_resource` so it isn't reloaded on every click, and load it with `map_location="cpu"` for servers without a GPU.
-- **Publish it as a Hugging Face Space,** so anyone can make a dinosaur from a link.
+- **Add a temperature setting.** Dividing the logits by a temperature before the softmax would let users choose between safe names and wilder ones. Long seeds currently give the same answer every time: `varunapithecu` always becomes **VARUNAPITHECUS**, because the model is nearly certain that `cu` → `s` → end.
+- **Also publish on Hugging Face,** as a Gradio Space, next to the Streamlit version.
 
 ---
 
@@ -293,11 +296,14 @@ So pretraining is the foundation, SFT is the same machinery aimed at better exam
 | `dino_gpt.pth` | Trained weights |
 | `dinohelper.py` | The model classes and `generate_name`, as an importable module |
 | `feedforward.py` | Streamlit web app: type a seed, get a dinosaur |
+| `requirements.txt` | Packages the app needs (`torch`, `streamlit`) |
 
 ## Running the app
 
+The app is live at **[dino-gpt.streamlit.app](https://dino-gpt.streamlit.app/)**, hosted free on Streamlit Community Cloud, which redeploys automatically on every push to `main`. To run it locally:
+
 ```bash
-pip install torch streamlit
+pip install -r requirements.txt
 streamlit run feedforward.py
 ```
 
