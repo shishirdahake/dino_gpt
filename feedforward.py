@@ -27,3 +27,9 @@ st.button('Generate Name', icon='🦖', on_click=click_button)
 if st.session_state.clicked:
     dino_name = generate_name(model, seed)
     st.success(f'Our latest Dinosaur is named **{dino_name.upper()}**. Roar!')
+
+st.divider()
+st.caption(
+    "© 2026 Shishir Dahake · DinoGPT, a ground-up Transformer · "
+    "[Source on GitHub](https://github.com/shishirdahake/dino_gpt)"
+)
